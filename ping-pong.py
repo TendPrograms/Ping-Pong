@@ -1,14 +1,16 @@
 from pygame import *
-from time import time as timer
-window = display.set_mode((800, 500))
+from random import randint
+window = display.set_mode((700, 500))
 display.set_caption('Пинг-Понг')
 window.fill((30, 255, 200))
 font.init()
+mixer.init()
 font1 = font.SysFont('Arial', 50)
 font2 = font.SysFont('Arial', 30)
+kick = mixer.Sound('kick-ball.ogg')
 time = time.Clock()
-dy = 3
-dx = 3
+dy = randint(1,5)
+dx = 6
 point1 = 0
 point2 = 0
 wall1 = Surface((800, 10))
@@ -58,21 +60,26 @@ class Ball(GameSprite):
         global dx
         self.rect.x += dx
         self.rect.y += dy
-        if self.rect.y < 50 or self.rect.y > 450:
+        if self.rect.y > 460 or self.rect.y < 55:
+            kick.play()
             dy *= -1
         if self.rect.x < 0:
-            dy *= -1
+            dy = 0
             dx *= -1
-            self.rect.x = 370
+            self.rect.x = player1.rect.right + 10
+            self.rect.y = player1.rect.centery
+            kick.play()
             point2 += 1
-        if self.rect.x > 800:
-            dy *= -1
+        if self.rect.x > 640:
+            dy = 0
             dx *= -1
-            self.rect.x = 370
+            self.rect.x = player2.rect.x - 10
+            self.rect.y = player2.rect.centery
+            kick.play()
             point1 += 1
 
-player1 = Player('ping-pong.png', 100, 250, 50,150, 5)
-player2 = Player('ping-pong.png', 620, 250, 50, 150,5)
+player1 = Player('ping-pong.png', -36, 250, 100,150, 5)
+player2 = Player('ping-pong.png', 635, 250, 100, 150,5)
 ball = Ball('ball.png', 370, 250, 50, 50, 0)
 game = True
 finish = False
@@ -82,20 +89,34 @@ while game:
             game = False
     window.fill((30, 255, 200))
     if not finish:
+        collide1 = False
+        collide2 = False
         points1 = font2.render('Очки: ' + str(point1), True, (0,0,0))
         points2 = font2.render('Очки: ' + str(point2), True, (0,0,0))
         window.blit(wall1, (0, 40))
-        window.blit(wall2, (400, 0))
-        window.blit(points1, (20, 5))
-        window.blit(points2, (650, 5))
+        window.blit(wall2, (350, 0))
+        window.blit(points1, (30, 5))
+        window.blit(points2, (570, 5))
         player1.blit()
         player1.update2()
         player2.blit()
         player2.update1()
         ball.blit()
         ball.update()
-        if sprite.collide_rect(ball, player1.rect.right) or sprite.collide_rect(ball, player2.rect.left):
+        if ball.rect.bottom > player1.rect.top and ball.rect.top < player1.rect.bottom and ball.rect.right > player1.rect.left + 40 and ball.rect.left < player1.rect.right - 40:
+            collide1 = True
+        if ball.rect.bottom > player2.rect.top and ball.rect.top < player2.rect.bottom and ball.rect.right > player2.rect.left + 40 and ball.rect.left < player2.rect.right - 40:
+            collide2 = True
+        if collide1 or collide2:
+            kick.play()
+            if dy >= 1:
+                dy = randint(1,5)
+            if dy <= -1:
+                dy = randint(-5,-1)
+            if dy == 0:
+                dy = randint(-5, 5)
             dx *= -1
+
     if point1 >= 10:
         finish = True
         win = font1.render('Игрок 1 выиграл!', True, (0,0,0))
