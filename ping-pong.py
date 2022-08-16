@@ -8,6 +8,7 @@ mixer.init()
 font1 = font.SysFont('Arial', 50)
 font2 = font.SysFont('Arial', 30)
 kick = mixer.Sound('kick-ball.ogg')
+win_sound = mixer.Sound('game-won.ogg')
 time = time.Clock()
 dy = randint(1,5)
 dx = 6
@@ -120,10 +121,12 @@ while game:
     if point1 >= 10:
         finish = True
         win = font1.render('Игрок 1 выиграл!', True, (0,0,0))
-        window.blit(win, (210, 240))
+        win_sound.play()
+        window.blit(win, (180, 240))
     if point2 >= 10:
         finish = True
+        win_sound.play()
         win = font1.render('Игрок 2 выиграл!', True, (0,0,0))
-        window.blit(win, (210, 240))
+        window.blit(win, (180, 240))
     display.update()
     time.tick(60)
